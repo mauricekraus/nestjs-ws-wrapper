@@ -1,6 +1,6 @@
 {
   "name": "nestjs-ws-wrapper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Convenient wrapper around websockets to be used in nestjs",
   "main": "index.js",
   "author": "Maurice Kraus",
