@@ -4,5 +4,32 @@
   "description": "Convenient wrapper around websockets to be used in nestjs",
   "main": "index.js",
   "author": "Maurice Kraus",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "prepare": "yarn build",
+    "prepublishOnly": "yarn lint",
+    "preversion": "yarn lint",
+    "version": "yarn format && git add -A src",
+    "postversion": "git push && git push --tags",
+    "build": "tsc",
+    "format": "prettier --write 'src/**/*.ts'",
+    "lint": "tslint -p tsconfig.json"
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "keywords": [
+    "Nestjs",
+    "websocket"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mauricekraus/nestjs-ws-wrapper.git"
+  },
+  "devDependencies": {
+    "prettier": "^2.0.5",
+    "tslint": "^6.1.2",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.9.5"
+  }
 }
