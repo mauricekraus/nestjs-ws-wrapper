@@ -9,7 +9,8 @@
     "sourceMap": true,
     "outDir": "./lib",
     "strict": true,
-    "incremental": true
+    "incremental": true,
+    "lib": ["ES2015", "ES2016"]
   },
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "lib"]
 }
