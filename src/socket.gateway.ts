@@ -11,8 +11,13 @@ import { Socket } from 'net';
 @Injectable()
 export abstract class SocketGateway implements OnModuleInit {
   private connectedClients: Map<string, WebSocket>;
+  private wss?: WebSocket.Server;
   get clients(): Map<string, WebSocket> {
     return this.connectedClients;
+  }
+
+  get socketServer(): WebSocket.Server {
+    return this.wss!;
   }
 
   constructor(private readonly adapter: HttpAdapterHost, private jwtService: JwtService) {
@@ -75,7 +80,7 @@ export abstract class SocketGateway implements OnModuleInit {
   private initGateway() {
     const server = this.adapter.httpAdapter.getHttpServer();
     const path: string | undefined = Reflect.getMetadata(Metakeys.GatewayPath, this);
-    const wss = new WebSocket.Server({
+    this.wss = new WebSocket.Server({
       clientTracking: false,
       noServer: true,
       path,
@@ -110,12 +115,12 @@ export abstract class SocketGateway implements OnModuleInit {
         return;
       }
 
-      wss.handleUpgrade(request, socket, head, function done(ws) {
-        wss.emit('connection', ws, request);
+      this.wss!.handleUpgrade(request, socket, head, (ws) => {
+        this.wss!.emit('connection', ws, request);
       });
     });
 
-    wss.on('connection', (ws, request: IncomingMessage) => {
+    this.wss!.on('connection', (ws, request: IncomingMessage) => {
       const cookies = this.parseCookie(request.headers.cookie);
       const userId = this.jwtService.verify(cookies!.jwt!).sub;
       this.connectedClients.set(userId, ws);
