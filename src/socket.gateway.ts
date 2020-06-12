@@ -31,6 +31,23 @@ export abstract class SocketGateway implements OnModuleInit {
     ws.close();
   }
 
+  public broadcast(userId: string, data: object) {
+    this.connectedClients.forEach((ws, key) => {
+      if (userId !== key && ws.readyState === WebSocket.OPEN) {
+        ws.send(data);
+      }
+    });
+  }
+
+  public sendMessageTo(clientId: string, data: object) {
+    const client: WebSocket | undefined = this.clients.get(clientId);
+    if (client) {
+      client.send(JSON.stringify(data));
+    } else {
+      console.error('socket with id ' + clientId + ' is not reachable');
+    }
+  }
+
   protected authenticate = (req: IncomingMessage) => {
     const cookies = this.parseCookie(req.headers.cookie);
     try {
@@ -43,15 +60,6 @@ export abstract class SocketGateway implements OnModuleInit {
       return false;
     }
   };
-
-  protected sendMessageTo(clientId: string, data: object) {
-    const client: WebSocket | undefined = this.clients.get(clientId);
-    if (client) {
-      client.send(JSON.stringify(data));
-    } else {
-      console.error('socket with id ' + clientId + ' is not reachable');
-    }
-  }
 
   private parseCookie = (str?: string): object & { jwt?: string } =>
     (str?.length ?? 0) > 0
@@ -66,11 +74,11 @@ export abstract class SocketGateway implements OnModuleInit {
 
   private initGateway() {
     const server = this.adapter.httpAdapter.getHttpServer();
-    // const path: string | undefined = Reflect.getMetadata('path', gateway);
+    const path: string | undefined = Reflect.getMetadata(Metakeys.GatewayPath, this);
     const wss = new WebSocket.Server({
       clientTracking: false,
       noServer: true,
-      //  path,
+      path,
     });
     const prototype = Object.getPrototypeOf(this);
 
@@ -85,8 +93,11 @@ export abstract class SocketGateway implements OnModuleInit {
           methods.add(Metakeys.ConnectionInit, method);
         } else if (Reflect.getMetadata(Metakeys.MessageHandlerMapping, method)) {
           const messagePattern = Reflect.getMetadata(Metakeys.MesssageMetadata, method);
-
           methods.add(messagePattern, method);
+        } else if (Reflect.getMetadata(Metakeys.ConnectionClose, method)) {
+          methods.add(Metakeys.ConnectionClose, method);
+        } else if (Reflect.getMetadata(Metakeys.ConnectionConnected, method)) {
+          methods.add(Metakeys.ConnectionConnected, method);
         }
       }
     });
@@ -107,8 +118,10 @@ export abstract class SocketGateway implements OnModuleInit {
     wss.on('connection', (ws, request: IncomingMessage) => {
       const cookies = this.parseCookie(request.headers.cookie);
       const userId = this.jwtService.verify(cookies!.jwt!).sub;
-
       this.connectedClients.set(userId, ws);
+
+      const connectedMethod = methods.item(Metakeys.ConnectionConnected).bind(this);
+      connectedMethod(ws, userId);
 
       ws.on('message', (data: string) => {
         const message: { event: string; data: any } = JSON.parse(data);
@@ -118,6 +131,8 @@ export abstract class SocketGateway implements OnModuleInit {
 
       ws.on('close', () => {
         this.connectedClients.delete(userId);
+        const closeMethod = methods.item(Metakeys.ConnectionClose).bind(this);
+        closeMethod(userId);
       });
     });
   }
