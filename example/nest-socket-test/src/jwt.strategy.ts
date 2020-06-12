@@ -6,8 +6,8 @@ import { UserService, User } from './user/user.service';
 
 const cookieExtractor = (req: any) => {
   let token: null | string = null;
-  if (req && req.cookies && req.cookies['jwt']) {
-    token = req.cookies['jwt'];
+  if (req && req.cookies && req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   return token;

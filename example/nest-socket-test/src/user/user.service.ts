@@ -7,7 +7,7 @@ export interface User {
 
 @Injectable()
 export class UserService {
-  private users: Array<User>;
+  private users: User[];
   constructor() {
     this.users = [];
   }
