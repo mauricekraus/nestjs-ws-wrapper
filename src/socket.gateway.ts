@@ -80,15 +80,12 @@ export abstract class SocketGateway implements OnModuleInit {
   private initGateway() {
     const server = this.adapter.httpAdapter.getHttpServer();
     const path: string | undefined = Reflect.getMetadata(Metakeys.GatewayPath, this.constructor);
-    console.log('PATH2: ' + path);
-    console.log('hi');
     this.wss = new WebSocket.Server({
       clientTracking: false,
       noServer: true,
       path,
     });
 
-    console.log('NPath: ' + this.wss.options.path);
     const prototype = Object.getPrototypeOf(this);
 
     const methodNames = Object.getOwnPropertyNames(prototype);
