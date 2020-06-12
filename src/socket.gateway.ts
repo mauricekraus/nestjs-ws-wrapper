@@ -23,6 +23,14 @@ export abstract class SocketGateway implements OnModuleInit {
     this.initGateway();
   }
 
+  public closeConnection(userId: string) {
+    const ws = this.connectedClients.get(userId);
+    if (!ws) {
+      return;
+    }
+    ws.close();
+  }
+
   protected authenticate = (req: IncomingMessage) => {
     const cookies = this.parseCookie(req.headers.cookie);
     try {
