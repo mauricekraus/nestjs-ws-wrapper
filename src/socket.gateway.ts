@@ -103,7 +103,7 @@ export abstract class SocketGateway implements OnModuleInit {
     });
 
     server.on('upgrade', (request: IncomingMessage, socket: Socket, head: any) => {
-      const init = methods.item(Metakeys.ConnectionInit).bind(this);
+      const init = methods.item(Metakeys.ConnectionInit)?.bind(this);
       if (init(request) === false) {
         socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
         socket.destroy();
@@ -120,19 +120,25 @@ export abstract class SocketGateway implements OnModuleInit {
       const userId = this.jwtService.verify(cookies!.jwt!).sub;
       this.connectedClients.set(userId, ws);
 
-      const connectedMethod = methods.item(Metakeys.ConnectionConnected).bind(this);
-      connectedMethod(ws, userId);
+      const connectedMethod = methods.item(Metakeys.ConnectionConnected)?.bind(this);
+      if (connectedMethod) {
+        connectedMethod(ws, userId);
+      }
 
       ws.on('message', (data: string) => {
         const message: { event: string; data: any } = JSON.parse(data);
-        const method = methods.item(message.event).bind(this);
-        method(ws, userId, message.data);
+        const method = methods.item(message.event)?.bind(this);
+        if (method) {
+          method(ws, userId, message.data);
+        }
       });
 
       ws.on('close', () => {
         this.connectedClients.delete(userId);
-        const closeMethod = methods.item(Metakeys.ConnectionClose).bind(this);
-        closeMethod(userId);
+        const closeMethod = methods.item(Metakeys.ConnectionClose)?.bind(this);
+        if (closeMethod) {
+          closeMethod(userId);
+        }
       });
     });
   }
