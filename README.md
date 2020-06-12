@@ -40,7 +40,7 @@ In order to define socket messages just add the **@SocketMessage** annotation to
 You will get the userId, the socket or the data injected from the method, but you can leave them out entirely, but it is important when you specify them that you follow this order.
 
 ## Example
-An Example is available: [Example](https://github.com/mauricekraus/nestjs-ws-wrapper/tree/master/example/nest-socket-test)
+An example is available in the [example directory](https://github.com/mauricekraus/nestjs-ws-wrapper/tree/master/example/nest-socket-test)
 
 ## Installation
 
