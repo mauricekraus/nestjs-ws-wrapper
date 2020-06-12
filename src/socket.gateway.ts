@@ -83,7 +83,7 @@ export abstract class SocketGateway implements OnModuleInit {
     this.wss = new WebSocket.Server({
       clientTracking: false,
       noServer: true,
-      path,
+      path: path !== undefined ? '/' + path : undefined,
     });
 
     const prototype = Object.getPrototypeOf(this);
